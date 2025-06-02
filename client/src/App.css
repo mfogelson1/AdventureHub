@@ -1,0 +1,30 @@
+// ===== 📁 client/src/App.css =====
+.App {
+  font-family: sans-serif;
+  padding: 1rem;
+}
+
+.chat-window {
+  border: 1px solid #ccc;
+  height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f9f9f9;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.join-screen input {
+  padding: 0.5rem;
+  font-size: 1rem;
+} 
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+} 
