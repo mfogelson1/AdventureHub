@@ -1,54 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
+// ===== 📁 client/src/App.js =====
+import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import './App.css';
 
-const socket = io('http://localhost:3001');
+const socket = io();
 
 function App() {
   const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
-  const [chat, setChat] = useState([]);
+  const [joined, setJoined] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    socket.on('chat_message', (msg) => {
-      setChat((prev) => [...prev, msg]);
+    socket.on('chat message', (msg) => {
+      setMessages((prev) => [...prev, msg]);
     });
 
-    return () => socket.off('chat_message');
+    return () => {
+      socket.off('chat message');
+    };
   }, []);
 
-  const sendMessage = () => {
-    if (name && message.trim()) {
-      socket.emit('user_message', { sender: name, text: message });
-      setMessage('');
+  const handleJoin = () => {
+    if (name.trim()) {
+      setJoined(true);
     }
   };
 
+  const handleSend = () => {
+    if (input.trim()) {
+      const message = { name, text: input };
+      socket.emit('chat message', message);
+      setMessages((prev) => [...prev, message]);
+      setInput('');
+    }
+  };
+
+  if (!joined) {
+    return (
+      <div className="join-screen">
+        <input
+          placeholder="Enter your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+        />
+        <button onClick={handleJoin}>Join</button>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
-      {!name ? (
-        <div className="join-screen">
-          <h2>Enter your name</h2>
-          <input onChange={(e) => setName(e.target.value)} placeholder="e.g., Mark" />
+      <div className="chat-screen">
+        <div className="chat-window">
+          {messages.map((msg, idx) => (
+            <div key={idx}><strong>{msg.name}:</strong> {msg.text}</div>
+          ))}
         </div>
-      ) : (
-        <div className="chat-screen">
-          <div className="chat-window">
-            {chat.map((msg, i) => (
-              <div key={i}><strong>{msg.sender}:</strong> {msg.text}</div>
-            ))}
-          </div>
-          <div className="input-row">
-            <input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder="Type a message"
-            />
-            <button onClick={sendMessage}>Send</button>
-          </div>
+        <div className="input-row">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Type your message here..."
+          />
+          <button onClick={handleSend}>Send</button>
         </div>
-      )}
+      </div>
+      <div className="sidebar">
+        <div className="sidebar-section">
+          <h3>Marching Order</h3>
+          <p>Balthazog - 27 HP</p>
+          <p>Hene - 34 HP</p>
+        </div>
+        <div className="sidebar-section">
+          <h3>Status</h3>
+          <p>Balthazog: Holding staff</p>
+          <p>Hene: Bow drawn</p>
+        </div>
+        <div className="sidebar-section">
+          <h3>Loot</h3>
+          <p>47 GP</p>
+          <p>Unclaimed: Silver ring</p>
+        </div>
+      </div>
     </div>
   );
 }
